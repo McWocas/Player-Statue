@@ -107,6 +107,8 @@ def clean(pix):
     for o_x in range(8):
         for o_y in range(8):
             pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
+            
+#the main function
 def main(Username, name , skin):
     time1=1
     time2=2
@@ -114,6 +116,22 @@ def main(Username, name , skin):
     directory= os.getcwd()
     save = os.path.join(directory,'skin/')
     datapack_folder = os.path.join(directory,"Player Statues")
+    username='wocas'
+    
+    username='wocas'
+    r=requests.get(f'https://api.mojang.com/users/profiles/minecraft/{username}')
+    USER_UUID = r.json()['id']
+    r=requests.get(f'https://sessionserver.mojang.com/session/minecraft/profile/{USER_UUID}')
+    userinfo = r.json()
+    texture_info = find_texture_info(userinfo['properties'])
+    texture_url=texture_info['textures']
+    texture_url=texture_url['SKIN']
+    texture_url=texture_url['url']
+    test=requests.get(texture_url)
+    with open((f"{username}.png"), 'wb') as Original_skin:
+        Original_skin.write(test.content)
+
+
     try:
         os.mkdir(save)
     except:
@@ -554,6 +572,7 @@ def main(Username, name , skin):
     RemoveMcfunction = open(f'{functions_folder}/remove.mcfunction','w')
     RemoveMcfunction.write(f'kill @e[tag={name}]') 
     RemoveMcfunction.close()
+    upload_skin(f'{os.getcwd()+"/"+username}.png')
     print('[*]done')
 
 
@@ -561,5 +580,4 @@ def main(Username, name , skin):
 print("Hay, Welcome To the player statue generator i created.\nHere is how it works:\1st)Locate the skin you want as a statue and copy it's adress(e.g. C:/.../skin.png) !make sure you use / and not \\!\n2de You need to log in in the google tab that just opend and verfy that your a human.\n3th Hit enter after you've logged in.\n4th type 'main('Username', 'Name', 'Skin')' where:\n   Username=The name of your minecraft account that you used to login.\n   Name=The name that you want to give your statue(!important to take a different name each time!).\n   Skin=The adress of the skin.\n\nYou can do this as many times as you want just repeat step 1 and 4(as long as you don't close the browser or script)") 
 browser = webdriver.Chrome()
 web = browser.get('https://www.minecraft.net/nl-nl/profile/skin')
-check = True
 input('Enter when ready:')
