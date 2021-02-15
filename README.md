@@ -21,4 +21,4 @@ use "/function Name:remove" -->(Name is the Name you gave it in step 4) to remov
 
 For absolute beginners watch: https://youtu.be/f8MlIoKleIQ
 
-Any questions jion my discord server and I'll answer them: https://discord.gg/YcbEX8af9v
+Any questions jion my discord server and I'll answer them: https://discord.gg/kEDf3GbTce
