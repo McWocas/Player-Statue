@@ -1,1 +1,1 @@
-This is the README for the Player-Statue-Generator
+This is the Player Statue Generator by Wocas.
