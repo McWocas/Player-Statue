@@ -40,11 +40,11 @@ def get_skin_url(username):
     skull = 'tag: {display:{Name:"{\\"text\\":\\"\\"}"},SkullOwner:{Id:[I;1453969447,2116502106,-1773076886,1306133934],Properties:{textures:[{Value:"'+value.decode()+'"}]}}}'
     return skull
     
-#generates a armor stand with custom head and position
+# Generates an armor stand with custom head and position
 def generate_armorstand(username,name):
     return '{Tags:["'+ name +'"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}}'
 
-#Get's the value of certain pixels and replace them with th corect face 
+# Gets the value of certain pixels and replaces them with the correct face 
 def get_pixels(x,y,face,pix):
     pixels = {}
     for x_pos in range(4):
@@ -541,7 +541,7 @@ def main(Username, name , skin):
     #make the datapack
     print('[*]making the datapack...')
     PackMcmeta = open(f"{datapack_folder}/pack.mcmeta", 'w')
-    PackMcmeta.write('{\n   "pack":{\n      "pack_format":6,\n      "description":"Player Satues"\n   }\n}')
+    PackMcmeta.write('{\n   "pack":{\n      "pack_format":6,\n      "description":"Player Statues"\n   }\n}')
     PackMcmeta.close()
 
     data_folder = os.path.join(datapack_folder, "data")
@@ -577,7 +577,7 @@ def main(Username, name , skin):
 
 
 #opens the web browser
-print("Hay, Welcome To the player statue generator i created.\nHere is how it works:\1st)Locate the skin you want as a statue and copy it's adress(e.g. C:/.../skin.png) !make sure you use / and not \\!\n2de You need to log in in the google tab that just opend and verfy that your a human.\n3th Hit enter after you've logged in.\n4th type 'main('Username', 'Name', 'Skin')' where:\n   Username=The name of your minecraft account that you used to login.\n   Name=The name that you want to give your statue(!important to take a different name each time!).\n   Skin=The adress of the skin.\n\nYou can do this as many times as you want just repeat step 1 and 4(as long as you don't close the browser or script)") 
+print("Hey, Welcome to the player statue generator I created.\nHere is how it works:\n1st) Locate the skin you want as a statue and copy it's address (e.g. C:/.../skin.png) !make sure you use / and not \\!\n2nd) You need to log in in the google tab that just opened and verify that you are a human.\n3rd) Hit enter after you've logged in.\n4th) type 'main('Username', 'Name', 'Skin')' where:\n   Username=The name of your Minecraft account that you used to login.\n   Name=The name that you want to give your statue(!important to take a different name each time!).\n   Skin=The adress of the skin.\n\nYou can do this as many times as you want just repeat steps 1 and 4 (as long as you don't close the browser or script.)") 
 browser = webdriver.Chrome()
-web = browser.get('https://www.minecraft.net/nl-nl/profile/skin')
+web = browser.get('https://www.minecraft.net/profile/skin')
 input('Enter when ready:')
