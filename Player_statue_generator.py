@@ -107,9 +107,23 @@ def clean(pix):
     for o_x in range(8):
         for o_y in range(8):
             pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-            
+
+def squash_overlay(skin,save):
+    im = Image.open(skin)
+    pix = im.load()
+
+    for overlay_y in range(16):
+        for overlay_x in range(32):
+            if pix[overlay_x+32,overlay_y] == (0,0,0,0):
+                pass
+            else:
+                pix[overlay_x,overlay_y] = pix[overlay_x+32,overlay_y]
+    im.save(f'{save}new_skin.png')
+    im.close()
+
+
 #the main function
-def main(Username, name , skin):
+def main(Username, name , skin, overlay=True):
     time1=1
     time2=2
     datapack = {}
@@ -129,7 +143,6 @@ def main(Username, name , skin):
     with open((f"{Username}.png"), 'wb') as Original_skin:
         Original_skin.write(test.content)
 
-
     try:
         os.mkdir(save)
     except:
@@ -138,6 +151,11 @@ def main(Username, name , skin):
         os.mkdir(datapack_folder)
     except:
         pass
+
+    if overlay:
+        squash_overlay(skin,save)
+        skin = f'{save}new_skin.png'
+
     #head
     #front 1
     im = Image.open(skin)
@@ -536,6 +554,7 @@ def main(Username, name , skin):
     time.sleep(time1)
     datapack['lleg3'] = generate_armorstand(Username, name)
     time.sleep(time2)
+
     #make the datapack
     print('[*]making the datapack...')
     PackMcmeta = open(f"{datapack_folder}/pack.mcmeta", 'w')
