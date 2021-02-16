@@ -1,0 +1,7 @@
+Updates:
+-Added the {Invulnerable:1b} tag to the armorstands
+-Added the {DisabledSlots:65793} tag to the armorstands
+-Added every direction (positive X, negative X, positive Z, negative Z)(the statue has the same direction as your player)
+
+Bugfixes:
+-The reset skin function would set your skin to wocas' skin, it has now been fixed.
