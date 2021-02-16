@@ -12,7 +12,7 @@ Here is how it works:
 3) Hit enter in the python widow (where it says hit enter) 
 4) To generate a skin, type the following '`main('Username', 'Name', 'Skin')`' where:
    Username = The name of your Minecraft account that you used to login.
-   Name = The name that you want to give your statue (!important to take a different name each time!). It needs to be lowercase
+   Name = The name that you want to give your statue (!important to take a different name each time!). It needs to be lowercase.
    Skin = The path address (file location) of the skin. If you are on Windows, it will probably look like `C:/Users/username/path/to/file.png`
    
 Step 4 you can repeat as much as you want. To use it in game, paste the folder "Player Statues" in the datapack folder of your world.
