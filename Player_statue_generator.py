@@ -576,8 +576,8 @@ def main(Username, name , skin):
     print('[*]done')
 
 
-#opens the web browser
-print("Hey, Welcome to the player statue generator I created.\nHere is how it works:\n1st) Locate the skin you want as a statue and copy it's address (e.g. C:/.../skin.png) !make sure you use / and not \\!\n2nd) You need to log in in the google tab that just opened and verify that you are a human.\n3rd) Hit enter after you've logged in.\n4th) type 'main('Username', 'Name', 'Skin')' where:\n   Username=The name of your Minecraft account that you used to login.\n   Name=The name that you want to give your statue(!important to take a different name each time!).\n   Skin=The adress of the skin.\n\nYou can do this as many times as you want just repeat steps 1 and 4 (as long as you don't close the browser or script.)") 
+# Opens the web browser
+print("Hey, Welcome to the player statue generator I created.\nHere is how it works:\n1st) Locate the skin you want as a statue and copy it's address (e.g. C:/.../skin.png) !make sure you use / and not \\!\n2nd) You need to log in in the google tab that just opened and verify that you are a human.\n3rd) Hit enter after you've logged in.\n4th) type 'main('Username', 'Name', 'Skin')' where:\n   Username=The name of your Minecraft account that you used to login.\n   Name=The name that you want to give your statue(!important to take a different name each time!).\n   Skin=The path address of the skin file.\n\nYou can do this as many times as you want, all you need to do is repeat steps 1 and 4 (as long as you don't close the browser or script.)") 
 browser = webdriver.Chrome()
 web = browser.get('https://www.minecraft.net/profile/skin')
 input('Enter when ready:')
