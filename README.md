@@ -1,7 +1,7 @@
 This is the Player Statue Generator by Wocas.
 
 The python packges used:
-- selenium
+- selenium (browser used = Chrome)
 - requests
 - pillow
 
