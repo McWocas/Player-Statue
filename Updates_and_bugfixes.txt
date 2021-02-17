@@ -1,4 +1,5 @@
 Updates:
--Added the overlay squash function (this add's the overlay to the normal layer so it can be diplayed)
 
 Bugfixes:
+-The squash fuction would only squash the head now it does the whole skin.
+-the stands couldn't be placed near each other without "glitching". Now you can

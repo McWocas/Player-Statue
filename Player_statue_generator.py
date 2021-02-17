@@ -20,6 +20,7 @@ def upload_skin(file):
         upload = buttons[2]
         upload.click()
     print('[*]uploaded a skin...')
+    
 #is used by generate_armorstand
 def find_texture_info(properties):
     for prop in properties:
@@ -42,7 +43,7 @@ def get_skin_url(username):
     
 # Generates an armor stand with custom head and position
 def generate_armorstand(username,name):
-    return ['{Tags:["'+ name +'"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]},Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[180.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[-90.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[90.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}']
+    return ['{Tags:["'+ name +'","base_building"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]},Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'","base_building"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[180.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'","base_building"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[-90.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}','{Tags:["'+ name +'","base_building"],Invisible:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:"player_head",Count:1b,'+get_skin_url(username)+'},{}],Pose:{RightArm:[315f,315f,0f]}, Rotation:[90.0f,0.0f],Invulnerable:1b,DisabledSlots:65793}']
 
 # Gets the value of certain pixels and replaces them with the correct face 
 def get_pixels(x,y,face,pix):
@@ -77,47 +78,64 @@ def get_pixels(x,y,face,pix):
 
 #cleans the alpha layer
 def clean(pix):
-    start_x = 8
-    start_y = 8
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-    start_x = 24
-    start_y = 8
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-    start_x = 8
-    start_y = 0
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-    start_x = 16
-    start_y = 0
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-    start_x = 0
-    start_y = 8
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
-    start_x = 16
-    start_y = 8
-    for o_x in range(8):
-        for o_y in range(8):
-            pix[o_x+start_x+32,o_y+start_y]=(0,0,0,0)
+    #head
+    for o_y in range(16):
+        for o_x in range(32):
+            pix[o_x+32,o_y]=(0,0,0,0)
+            
+    #body, right leg and right arm
+    for o_y in range(16):
+        for o_x in range(56):
+            pix[o_x,o_y+32]=(0,0,0,0)
 
+    #left leg
+    for o_y in range(16):
+        for o_x in range(16):
+            pix[o_x,o_y+48]=(0,0,0,0)
+
+    #left arm
+    for o_y in range(16):
+        for o_x in range(16):
+            pix[o_x+48,o_y+48]=(0,0,0,0)
+
+    
+#paste the overlay onto the normal layer
 def squash_overlay(skin,save):
     im = Image.open(skin)
     pix = im.load()
-
+    
+    #body, right leg and right arm
+    for overlay_y in range(16):
+        for overlay_x in range(56):
+            if pix[overlay_x,overlay_y+32] == (0,0,0,0):
+                pass
+            else:
+                pix[overlay_x,overlay_y+16] = pix[overlay_x,overlay_y+32]
+                
+    #head
     for overlay_y in range(16):
         for overlay_x in range(32):
             if pix[overlay_x+32,overlay_y] == (0,0,0,0):
                 pass
             else:
                 pix[overlay_x,overlay_y] = pix[overlay_x+32,overlay_y]
+                
+    #left leg            
+    for overlay_y in range(16):
+        for overlay_x in range(16):
+            if pix[overlay_x,overlay_y+48] == (0,0,0,0):
+                pass
+            else:
+                pix[overlay_x+16,overlay_y+48] = pix[overlay_x,overlay_y+48]
+
+    #left arm
+    for overlay_y in range(16):
+        for overlay_x in range(16):
+            if pix[overlay_x+48,overlay_y+48] == (0,0,0,0):
+                pass
+            else:
+                pix[overlay_x+32,overlay_y+48] = pix[overlay_x+48,overlay_y+48]
+    
     im.save(f'{save}new_skin.png')
     im.close()
 
@@ -583,31 +601,31 @@ def main(Username, name , skin, overlay=True):
     GenerateMcfunction.close()
     
     GeneratenxMcfunction = open(f'{functions_folder}/generatenx.mcfunction','w')
-    GeneratenxMcfunction.write(f'summon armor_stand ~-0.1 ~-0.9 ~-0.65  {datapack["rarm3"][0]}\ntag @e[type=minecraft:armor_stand,limit=1,sort=nearest] add base_building\nexecute as @e[tag=base_building] at @s run function {name}:buildnx')
+    GeneratenxMcfunction.write(f'summon armor_stand ~-0.1 ~-0.9 ~-0.65  {datapack["rarm3"][0]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnx')
     GeneratenxMcfunction.close()
     BuildnxMcfuntion = open(f'{functions_folder}/buildnx.mcfunction', 'w')
-    BuildnxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][0]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][0]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~0.25 {datapack["rleg3"][0]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~0.25 {datapack["rleg2"][0]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~0.25 {datapack["rleg1"][0]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["body6"][0]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][0]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][0]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["body4"][0]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][0]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["body2"][0]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["larm3"][0]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["larm2"][0]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["larm1"][0]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.5 {datapack["lleg3"][0]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.5 {datapack["lleg2"][0]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.5 {datapack["lleg1"][0]}\n#head4:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head7"][0]}\n#head3:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~0.25 {datapack["head3"][0]}\n#head7:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head4"][0]}\n#head8:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~0.25 {datapack["head8"][0]}\n#head1:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head6"][0]}\n#head2:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~0.25 {datapack["head2"][0]}\n#head6:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head1"][0]}\n#head5:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~0.25 {datapack["head5"][0]}\ntag @s remove base_building')
+    BuildnxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][0]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][0]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~0.25 {datapack["rleg3"][0]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~0.25 {datapack["rleg2"][0]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~0.25 {datapack["rleg1"][0]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["body6"][0]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][0]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][0]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["body4"][0]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][0]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["body2"][0]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["larm3"][0]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["larm2"][0]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["larm1"][0]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.5 {datapack["lleg3"][0]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.5 {datapack["lleg2"][0]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.5 {datapack["lleg1"][0]}\n#head4:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head7"][0]}\n#head3:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~0.25 {datapack["head3"][0]}\n#head7:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head4"][0]}\n#head8:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~0.25 {datapack["head8"][0]}\n#head1:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head6"][0]}\n#head2:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~0.25 {datapack["head2"][0]}\n#head6:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head1"][0]}\n#head5:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~0.25 {datapack["head5"][0]}\ntag @e remove base_building')
     BuildnxMcfuntion.close()
     
     GeneratepxMcfunction = open(f'{functions_folder}/generatepx.mcfunction','w')
-    GeneratepxMcfunction.write(f'summon armor_stand ~0.1 ~-0.9 ~0.65  {datapack["rarm3"][1]}\ntag @e[type=minecraft:armor_stand,limit=1,sort=nearest] add base_building\nexecute as @e[tag=base_building] at @s run function {name}:buildpx')
+    GeneratepxMcfunction.write(f'summon armor_stand ~0.1 ~-0.9 ~0.65  {datapack["rarm3"][1]}\nexecute as @e[tag=base_building] at @s run function {name}:buildpx')
     GeneratepxMcfunction.close()
     BuildpxMcfuntion = open(f'{functions_folder}/buildpx.mcfunction', 'w')
-    BuildpxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][1]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][1]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~-0.25 {datapack["rleg3"][1]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~-0.25 {datapack["rleg2"][1]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~-0.25 {datapack["rleg1"][1]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["body6"][1]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][1]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][1]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["body4"][1]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][1]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["body2"][1]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["larm3"][1]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["larm2"][1]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["larm1"][1]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.5 {datapack["lleg3"][1]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.5 {datapack["lleg2"][1]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.5 {datapack["lleg1"][1]}\n#head4:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head7"][1]}\n#head3:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~-0.25 {datapack["head3"][1]}\n#head7:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head4"][1]}\n#head8:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~-0.25 {datapack["head8"][1]}\n#head1:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head6"][1]}\n#head2:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~-0.25 {datapack["head2"][1]}\n#head6:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head1"][1]}\n#head5:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~-0.25 {datapack["head5"][1]}\ntag @s remove base_building')
+    BuildpxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][1]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][1]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~-0.25 {datapack["rleg3"][1]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~-0.25 {datapack["rleg2"][1]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~-0.25 {datapack["rleg1"][1]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["body6"][1]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][1]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][1]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["body4"][1]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][1]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["body2"][1]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["larm3"][1]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["larm2"][1]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["larm1"][1]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.5 {datapack["lleg3"][1]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.5 {datapack["lleg2"][1]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.5 {datapack["lleg1"][1]}\n#head4:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head7"][1]}\n#head3:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~-0.25 {datapack["head3"][1]}\n#head7:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head4"][1]}\n#head8:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~-0.25 {datapack["head8"][1]}\n#head1:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head6"][1]}\n#head2:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~-0.25 {datapack["head2"][1]}\n#head6:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head1"][1]}\n#head5:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~-0.25 {datapack["head5"][1]}\ntag @e remove base_building')
     BuildpxMcfuntion.close()
     
     GeneratepzMcfunction = open(f'{functions_folder}/generatepz.mcfunction','w')
-    GeneratepzMcfunction.write(f'summon armor_stand ~-0.65 ~-0.9 ~0.1  {datapack["rarm3"][2]}\ntag @e[type=minecraft:armor_stand,limit=1,sort=nearest] add base_building\nexecute as @e[tag=base_building] at @s run function {name}:buildnz')
+    GeneratepzMcfunction.write(f'summon armor_stand ~-0.65 ~-0.9 ~0.1  {datapack["rarm3"][2]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnz')
     GeneratepzMcfunction.close()
     BuildpzMcfuntion = open(f'{functions_folder}/buildnz.mcfunction', 'w')
-    BuildpzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][2]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][2]}\n#rleg3:\nexecute at @s run summon armor_stand ~0.25 ~ ~ {datapack["rleg3"][2]}\n#rleg2:\nexecute at @s run summon armor_stand ~0.25 ~0.25 ~ {datapack["rleg2"][2]}\n#rleg1:\nexecute at @s run summon armor_stand ~0.25 ~0.50 ~ {datapack["rleg1"][2]}\n#body6:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["body6"][2]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][2]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][2]}\n#body4:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["body4"][2]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][2]}\n#body2:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["body2"][2]}\n#larm3:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["larm3"][2]}\n#larm2:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["larm2"][2]}\n#larm1:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["larm1"][2]}\n#rarm3:\nexecute at @s run summon armor_stand ~0.5 ~0.75 ~ {datapack["lleg3"][2]}\n#rarm2:\nexecute at @s run summon armor_stand ~0.5 ~1 ~ {datapack["lleg2"][2]}\n#rarm1:\nexecute at @s run summon armor_stand ~0.5 ~1.25 ~ {datapack["lleg1"][2]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head7"][2]}\n#head3:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~0.12 {datapack["head3"][2]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head4"][2]}\n#head8:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~-0.12 {datapack["head8"][2]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head6"][2]}\n#head2:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~0.12 {datapack["head2"][2]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head1"][2]}\n#head5:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~-0.12 {datapack["head5"][2]}\ntag @s remove base_building')
+    BuildpzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][2]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][2]}\n#rleg3:\nexecute at @s run summon armor_stand ~0.25 ~ ~ {datapack["rleg3"][2]}\n#rleg2:\nexecute at @s run summon armor_stand ~0.25 ~0.25 ~ {datapack["rleg2"][2]}\n#rleg1:\nexecute at @s run summon armor_stand ~0.25 ~0.50 ~ {datapack["rleg1"][2]}\n#body6:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["body6"][2]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][2]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][2]}\n#body4:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["body4"][2]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][2]}\n#body2:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["body2"][2]}\n#larm3:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["larm3"][2]}\n#larm2:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["larm2"][2]}\n#larm1:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["larm1"][2]}\n#rarm3:\nexecute at @s run summon armor_stand ~0.5 ~0.75 ~ {datapack["lleg3"][2]}\n#rarm2:\nexecute at @s run summon armor_stand ~0.5 ~1 ~ {datapack["lleg2"][2]}\n#rarm1:\nexecute at @s run summon armor_stand ~0.5 ~1.25 ~ {datapack["lleg1"][2]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head7"][2]}\n#head3:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~0.12 {datapack["head3"][2]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head4"][2]}\n#head8:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~-0.12 {datapack["head8"][2]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head6"][2]}\n#head2:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~0.12 {datapack["head2"][2]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head1"][2]}\n#head5:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~-0.12 {datapack["head5"][2]}\ntag @e remove base_building')
     BuildpzMcfuntion.close()
     
     GeneratenzMcfunction = open(f'{functions_folder}/generatenz.mcfunction','w')
-    GeneratenzMcfunction.write(f'summon armor_stand ~0.65 ~-0.9 ~0.1  {datapack["rarm3"][3]}\ntag @e[type=minecraft:armor_stand,limit=1,sort=nearest] add base_building\nexecute as @e[tag=base_building] at @s run function {name}:buildpz')
+    GeneratenzMcfunction.write(f'summon armor_stand ~0.65 ~-0.9 ~0.1  {datapack["rarm3"][3]}\n execute as @e[tag=base_building] at @s run function {name}:buildpz')
     GeneratenzMcfunction.close()
     BuildnzMcfuntion = open(f'{functions_folder}/buildpz.mcfunction', 'w')
-    BuildnzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][3]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][3]}\n#rleg3:\nexecute at @s run summon armor_stand ~-0.25 ~ ~ {datapack["rleg3"][3]}\n#rleg2:\nexecute at @s run summon armor_stand ~-0.25 ~0.25 ~ {datapack["rleg2"][3]}\n#rleg1:\nexecute at @s run summon armor_stand ~-0.25 ~0.50 ~ {datapack["rleg1"][3]}\n#body6:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["body6"][3]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][3]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][3]}\n#body4:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["body4"][3]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][3]}\n#body2:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["body2"][3]}\n#larm3:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["larm3"][3]}\n#larm2:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["larm2"][3]}\n#larm1:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["larm1"][3]}\n#rarm3:\nexecute at @s run summon armor_stand ~-0.5 ~0.75 ~ {datapack["lleg3"][3]}\n#rarm2:\nexecute at @s run summon armor_stand ~-0.5 ~1 ~ {datapack["lleg2"][3]}\n#rarm1:\nexecute at @s run summon armor_stand ~-0.5 ~1.25 ~ {datapack["lleg1"][3]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head7"][3]}\n#head3:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~-0.12 {datapack["head3"][3]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head4"][3]}\n#head8:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~0.12 {datapack["head8"][3]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head6"][3]}\n#head2:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~-0.12 {datapack["head2"][3]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head1"][3]}\n#head5:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~0.12 {datapack["head5"][3]}\ntag @s remove base_building')
+    BuildnzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][3]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][3]}\n#rleg3:\nexecute at @s run summon armor_stand ~-0.25 ~ ~ {datapack["rleg3"][3]}\n#rleg2:\nexecute at @s run summon armor_stand ~-0.25 ~0.25 ~ {datapack["rleg2"][3]}\n#rleg1:\nexecute at @s run summon armor_stand ~-0.25 ~0.50 ~ {datapack["rleg1"][3]}\n#body6:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["body6"][3]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][3]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][3]}\n#body4:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["body4"][3]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][3]}\n#body2:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["body2"][3]}\n#larm3:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["larm3"][3]}\n#larm2:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["larm2"][3]}\n#larm1:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["larm1"][3]}\n#rarm3:\nexecute at @s run summon armor_stand ~-0.5 ~0.75 ~ {datapack["lleg3"][3]}\n#rarm2:\nexecute at @s run summon armor_stand ~-0.5 ~1 ~ {datapack["lleg2"][3]}\n#rarm1:\nexecute at @s run summon armor_stand ~-0.5 ~1.25 ~ {datapack["lleg1"][3]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head7"][3]}\n#head3:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~-0.12 {datapack["head3"][3]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head4"][3]}\n#head8:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~0.12 {datapack["head8"][3]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head6"][3]}\n#head2:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~-0.12 {datapack["head2"][3]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head1"][3]}\n#head5:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~0.12 {datapack["head5"][3]}\ntag @e remove base_building')
     BuildnzMcfuntion.close()
 
     RemoveMcfunction = open(f'{functions_folder}/remove.mcfunction','w')

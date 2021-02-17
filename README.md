@@ -17,7 +17,9 @@ Here is how it works:
 
 	Extra Settings:
    	- Type `Overlay=False` if you don't want to use the overlay (defaulted to True).
+
 Step 4 you can repeat as much as you want. To use it in game, paste the folder "Player Statues" in the datapack folder of your world.
+
 Use "```/function Name:generate```" --> (Name is the Name you gave it in step 4) to generate the player statue and 
 Use "```/function Name:remove```" --> (Name is the Name you gave it in step 4) to remove statue
 
