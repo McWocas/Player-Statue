@@ -1,5 +1,35 @@
-Updates:
+# Changelog
+All notable changes to this project will be documented in this file.
 
-Bugfixes:
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+
+## [Unreleased]
+### Added
+-Support for 64x32 skins.
+-You can now use the Minecraft name of a player and it will download the skin and use it to make the statue.
+
+## [version] - 2021-02-17
+### Fixed
 -The squash fuction would only squash the head now it does the whole skin.
 -the stands couldn't be placed near each other without "glitching". Now you can
+
+## [version] - 2021-02-17
+### Added
+-"The overlay squash" function.
+
+## [version] - 2021-02-16
+### Added
+-The {Invulnerable:1b} tag to the armorstands
+-The {DisabledSlots:65793} tag to the armorstands
+-Every direction (positive X, negative X, positive Z, negative Z)(the statue has the same direction as your player)
+### Fixed
+-"The reset original skin" function.
+
+## [version] - 2021-02-15
+### Added
+-"The reset original skin" function.
+
+## [version] - 2021-02-14
+first time

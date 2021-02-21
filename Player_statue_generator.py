@@ -82,22 +82,6 @@ def clean(pix):
     for o_y in range(16):
         for o_x in range(32):
             pix[o_x+32,o_y]=(0,0,0,0)
-            
-    #body, right leg and right arm
-    for o_y in range(16):
-        for o_x in range(56):
-            pix[o_x,o_y+32]=(0,0,0,0)
-
-    #left leg
-    for o_y in range(16):
-        for o_x in range(16):
-            pix[o_x,o_y+48]=(0,0,0,0)
-
-    #left arm
-    for o_y in range(16):
-        for o_x in range(16):
-            pix[o_x+48,o_y+48]=(0,0,0,0)
-
     
 #paste the overlay onto the normal layer
 def squash_overlay(skin,save):
@@ -138,7 +122,64 @@ def squash_overlay(skin,save):
     
     im.save(f'{save}new_skin.png')
     im.close()
+    
+#squash function for the 64x32 skin
+def squash_overlay_32(skin,save):
+    im = Image.open(skin)
+    pix = im.load()
+    
+    #head
+    for overlay_y in range(16):
+        for overlay_x in range(32):
+            if pix[overlay_x+32,overlay_y] == (0,0,0,0):
+                pass
+            else:
+                pix[overlay_x,overlay_y] = pix[overlay_x+32,overlay_y]
+                
+    im.save(f'{save}new_skin.png')
+    im.close()
+    
+#checks if the skin is 64x32 or 64x64
+def check_64(skin):
+    im = Image.open(skin)
+    pix = im.load()
 
+    try:
+        test = pix[63,63]
+        return True
+    except:
+        return False
+
+#this fuction is used by the 64x32 skin to mirror the legs and arms
+def get_reversed_pixels(x,y,face,pix):
+    pixels = {}
+    for x_pos in range(4):
+        for y_pos in range(4):
+            pixels[x_pos,y_pos]=pix[(3-x_pos)+x,y_pos+y]
+    if face == 'f':
+        start_x = 8
+        start_y = 8
+    if face == 'ba':
+        start_x = 24
+        start_y = 8
+    if face == 't':
+        start_x = 8
+        start_y = 0
+    if face == 'bo':
+        start_x = 16
+        start_y = 0
+    if face == 'l':
+        start_x = 0
+        start_y = 8
+    if face == 'r':
+        start_x = 16
+        start_y = 8
+    pixel_vals = pixels
+    for ele in pixel_vals:
+        pix[start_x+(ele[0]*2),start_y+(ele[1]*2)]= pixel_vals[ele]
+        pix[start_x+(ele[0]*2)+1,start_y+(ele[1]*2)] = pixel_vals[ele]
+        pix[start_x+(ele[0]*2),start_y+(ele[1]*2)+1] = pixel_vals[ele]
+        pix[start_x+(ele[0]*2)+1,start_y+(ele[1]*2)+1] = pixel_vals[ele]
 
 #the main function
 def main(Username, name , skin, overlay=True):
@@ -148,6 +189,21 @@ def main(Username, name , skin, overlay=True):
     directory= os.getcwd()
     save = os.path.join(directory,'skin/')
     datapack_folder = os.path.join(directory,"Player Statues")
+    if skin[1]==':':
+        pass
+    else:
+        r=requests.get(f'https://api.mojang.com/users/profiles/minecraft/{skin}')
+        USER_UUID = r.json()['id']
+        r=requests.get(f'https://sessionserver.mojang.com/session/minecraft/profile/{USER_UUID}')
+        userinfo = r.json()
+        texture_info = find_texture_info(userinfo['properties'])
+        texture_url=texture_info['textures']
+        texture_url=texture_url['SKIN']
+        texture_url=texture_url['url']
+        test=requests.get(texture_url)
+        with open(("new_skin.png"), 'wb') as new_skin:
+            new_skin.write(test.content)
+        skin = f'{os.getcwd()}/new_skin.png'
     
     r=requests.get(f'https://api.mojang.com/users/profiles/minecraft/{Username}')
     USER_UUID = r.json()['id']
@@ -171,407 +227,806 @@ def main(Username, name , skin, overlay=True):
         pass
 
     if overlay:
-        squash_overlay(skin,save)
+        if check_64(skin):
+            squash_overlay(skin,save)
+        else:
+            squash_overlay_32(skin,save)
         skin = f'{save}new_skin.png'
 
-    #head
-    #front 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(8, 8, 'f', pix)
-    get_pixels(8, 4, 't', pix)
-    get_pixels(4, 8, 'l', pix)
-    im.save(f'{save}head1.png')
-    im.close()
-    upload_skin(f'{save}head1.png')
-    time.sleep(time1)
-    datapack['head1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+    if check_64(skin):
+        #head
+        #front 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(8, 8, 'f', pix)
+        get_pixels(8, 4, 't', pix)
+        get_pixels(4, 8, 'l', pix)
+        im.save(f'{save}head1.png')
+        im.close()
+        upload_skin(f'{save}head1.png')
+        time.sleep(time1)
+        datapack['head1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #front 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(12, 8, 'f', pix)
-    get_pixels(12, 4, 't', pix)
-    get_pixels(16, 8, 'r', pix)
-    im.save(f'{save}head2.png')
-    im.close()
-    upload_skin(f'{save}head2.png')
-    time.sleep(time1)
-    datapack['head2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #front 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(12, 8, 'f', pix)
+        get_pixels(12, 4, 't', pix)
+        get_pixels(16, 8, 'r', pix)
+        im.save(f'{save}head2.png')
+        im.close()
+        upload_skin(f'{save}head2.png')
+        time.sleep(time1)
+        datapack['head2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #front 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(12, 12, 'f', pix)
-    get_pixels(20, 4, 'bo', pix)
-    get_pixels(16, 12, 'r', pix)
-    im.save(f'{save}head3.png')
-    im.close()
-    upload_skin(f'{save}head3.png')
-    time.sleep(time1)
-    datapack['head3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #front 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(12, 12, 'f', pix)
+        get_pixels(20, 4, 'bo', pix)
+        get_pixels(16, 12, 'r', pix)
+        im.save(f'{save}head3.png')
+        im.close()
+        upload_skin(f'{save}head3.png')
+        time.sleep(time1)
+        datapack['head3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #front 4
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(8, 12, 'f', pix)
-    get_pixels(16, 4, 'bo', pix)
-    get_pixels(4, 12, 'l', pix)
-    im.save(f'{save}head4.png')
-    im.close()
-    upload_skin(f'{save}head4.png')
-    time.sleep(time1)
-    datapack['head4'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #front 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(8, 12, 'f', pix)
+        get_pixels(16, 4, 'bo', pix)
+        get_pixels(4, 12, 'l', pix)
+        im.save(f'{save}head4.png')
+        im.close()
+        upload_skin(f'{save}head4.png')
+        time.sleep(time1)
+        datapack['head4'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #back 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(24, 8, 'ba', pix)
-    get_pixels(12, 0, 't', pix)
-    get_pixels(20, 8, 'r', pix)
-    im.save(f'{save}head5.png')
-    im.close()
-    upload_skin(f'{save}head5.png')
-    time.sleep(time1)
-    datapack['head5'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #back 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 8, 'ba', pix)
+        get_pixels(12, 0, 't', pix)
+        get_pixels(20, 8, 'r', pix)
+        im.save(f'{save}head5.png')
+        im.close()
+        upload_skin(f'{save}head5.png')
+        time.sleep(time1)
+        datapack['head5'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #back 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(28, 8, 'ba', pix)
-    get_pixels(8, 0, 't', pix)
-    get_pixels(0, 8, 'l', pix)
-    im.save(f'{save}head6.png')
-    im.close()
-    upload_skin(f'{save}head6.png')
-    time.sleep(time1)
-    datapack['head6'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #back 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(28, 8, 'ba', pix)
+        get_pixels(8, 0, 't', pix)
+        get_pixels(0, 8, 'l', pix)
+        im.save(f'{save}head6.png')
+        im.close()
+        upload_skin(f'{save}head6.png')
+        time.sleep(time1)
+        datapack['head6'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #back 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(28, 12, 'ba', pix)
-    get_pixels(16, 0, 'bo', pix)
-    get_pixels(0, 12, 'l', pix)
-    im.save(f'{save}head7.png')
-    im.close()
-    upload_skin(f'{save}head7.png')
-    time.sleep(time1)
-    datapack['head7'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #back 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(28, 12, 'ba', pix)
+        get_pixels(16, 0, 'bo', pix)
+        get_pixels(0, 12, 'l', pix)
+        im.save(f'{save}head7.png')
+        im.close()
+        upload_skin(f'{save}head7.png')
+        time.sleep(time1)
+        datapack['head7'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #back 4
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(24, 12, 'ba', pix)
-    get_pixels(20, 0, 'bo', pix)
-    get_pixels(20, 12, 'r', pix)
-    im.save(f'{save}head8.png')
-    im.close()
-    upload_skin(f'{save}head8.png')
-    time.sleep(time1)
-    datapack['head8'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-
-    #right arm
-    #right arm 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(4, 20, 'f', pix)
-    get_pixels(12, 20, 'ba', pix)
-    get_pixels(4, 16, 't', pix)
-    get_pixels(0, 20, 'l', pix)
-    get_pixels(8, 20, 'r', pix)
-    im.save(f'{save}rarm1.png')
-    im.close()
-    upload_skin(f'{save}rarm1.png')
-    time.sleep(time1)
-    datapack['rarm1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #right arm 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(4, 24, 'f', pix)
-    get_pixels(12, 24, 'ba', pix)
-    get_pixels(0, 24, 'l', pix)
-    get_pixels(8, 24, 'r', pix)
-    im.save(f'{save}rarm2.png')
-    im.close()
-    upload_skin(f'{save}rarm2.png')
-    time.sleep(time1)
-    datapack['rarm2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #right arm 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(4, 28, 'f', pix)
-    get_pixels(12, 28, 'ba', pix)
-    get_pixels(8, 16, 'bo', pix)
-    get_pixels(0, 28, 'l', pix)
-    get_pixels(8, 28, 'r', pix)
-    im.save(f'{save}rarm3.png')
-    im.close()
-    upload_skin(f'{save}rarm3.png')
-    time.sleep(time1)
-    datapack['rarm3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #back 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 12, 'ba', pix)
+        get_pixels(20, 0, 'bo', pix)
+        get_pixels(20, 12, 'r', pix)
+        im.save(f'{save}head8.png')
+        im.close()
+        upload_skin(f'{save}head8.png')
+        time.sleep(time1)
+        datapack['head8'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
 
-    #left arm
-    #left arm 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(44, 20, 'f', pix)
-    get_pixels(52, 20, 'ba', pix)
-    get_pixels(44, 16, 't', pix)
-    get_pixels(40, 20, 'l', pix)
-    get_pixels(48, 20, 'r', pix)
-    im.save(f'{save}larm1.png')
-    im.close()
-    upload_skin(f'{save}larm1.png')
-    time.sleep(time1)
-    datapack['larm1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left leg
+        #left leg 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 20, 'f', pix)
+        get_pixels(12, 20, 'ba', pix)
+        get_pixels(4, 16, 't', pix)
+        get_pixels(0, 20, 'l', pix)
+        get_pixels(8, 20, 'r', pix)
+        im.save(f'{save}lleg1.png')
+        im.close()
+        upload_skin(f'{save}lleg1.png')
+        time.sleep(time1)
+        datapack['lleg1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #left arm 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(44, 24, 'f', pix)
-    get_pixels(52, 24, 'ba', pix)
-    get_pixels(40, 24, 'l', pix)
-    get_pixels(48, 24, 'r', pix)
-    im.save(f'{save}larm2.png')
-    im.close()
-    upload_skin(f'{save}larm2.png')
-    time.sleep(time1)
-    datapack['larm2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left leg 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 24, 'f', pix)
+        get_pixels(12, 24, 'ba', pix)
+        get_pixels(0, 24, 'l', pix)
+        get_pixels(8, 24, 'r', pix)
+        im.save(f'{save}lleg2.png')
+        im.close()
+        upload_skin(f'{save}lleg2.png')
+        time.sleep(time1)
+        datapack['lleg2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #left arm 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(44, 28, 'f', pix)
-    get_pixels(52, 28, 'ba', pix)
-    get_pixels(48, 16, 'bo', pix)
-    get_pixels(40, 28, 'l', pix)
-    get_pixels(48, 28, 'r', pix)
-    im.save(f'{save}larm3.png')
-    im.close()
-    upload_skin(f'{save}larm3.png')
-    time.sleep(time1)
-    datapack['larm3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-
-    #body
-    #body 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 20, 'f', pix)
-    get_pixels(16, 20, 'l', pix)
-    get_pixels(20, 16, 't', pix)
-    get_pixels(36, 20, 'ba', pix)
-    im.save(f'{save}body1.png')
-    im.close()
-    upload_skin(f'{save}body1.png')
-    time.sleep(time1)
-    datapack['body1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #body 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(24, 20, 'f', pix)
-    get_pixels(28, 20, 'r', pix)
-    get_pixels(24, 16, 't', pix)
-    get_pixels(32, 20, 'ba', pix)
-    im.save(f'{save}body2.png')
-    im.close()
-    upload_skin(f'{save}body2.png')
-    time.sleep(time1)
-    datapack['body2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #body 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 24, 'f', pix)
-    get_pixels(16, 24, 'l', pix)
-    get_pixels(36, 24, 'ba', pix)
-    im.save(f'{save}body3.png')
-    im.close()
-    upload_skin(f'{save}body3.png')
-    time.sleep(time1)
-    datapack['body3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #body 4
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(24, 24, 'f', pix)
-    get_pixels(28, 24, 'r', pix)
-    get_pixels(32, 24, 'ba', pix)
-    im.save(f'{save}body4.png')
-    im.close()
-    upload_skin(f'{save}body4.png')
-    time.sleep(time1)
-    datapack['body4'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #body 5
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 28, 'f', pix)
-    get_pixels(16, 28, 'l', pix)
-    get_pixels(28, 16, 'bo', pix)
-    get_pixels(36, 28, 'ba', pix)
-    im.save(f'{save}body5.png')
-    im.close()
-    upload_skin(f'{save}body5.png')
-    time.sleep(time1)
-    datapack['body5'] = generate_armorstand(Username, name)
-    time.sleep(time2)
-
-    #body 6
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(24, 28, 'f', pix)
-    get_pixels(28, 28, 'r', pix)
-    get_pixels(32, 16, 'bo', pix)
-    get_pixels(32, 28, 'ba', pix)
-    im.save(f'{save}body6.png')
-    im.close()
-    upload_skin(f'{save}body6.png')
-    time.sleep(time1)
-    datapack['body6'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left leg 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 28, 'f', pix)
+        get_pixels(12, 28, 'ba', pix)
+        get_pixels(8, 16, 'bo', pix)
+        get_pixels(0, 28, 'l', pix)
+        get_pixels(8, 28, 'r', pix)
+        im.save(f'{save}lleg3.png')
+        im.close()
+        upload_skin(f'{save}lleg3.png')
+        time.sleep(time1)
+        datapack['lleg3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
 
-    #right leg
-    #right leg 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 52, 'f', pix)
-    get_pixels(28, 52, 'ba', pix)
-    get_pixels(20, 48, 't', pix)
-    get_pixels(16, 52, 'l', pix)
-    get_pixels(24, 52, 'r', pix)
-    im.save(f'{save}rleg1.png')
-    im.close()
-    upload_skin(f'{save}rleg1.png')
-    time.sleep(time1)
-    datapack['rleg1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left arm
+        #left arm 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 20, 'f', pix)
+        get_pixels(52, 20, 'ba', pix)
+        get_pixels(44, 16, 't', pix)
+        get_pixels(40, 20, 'l', pix)
+        get_pixels(48, 20, 'r', pix)
+        im.save(f'{save}larm1.png')
+        im.close()
+        upload_skin(f'{save}larm1.png')
+        time.sleep(time1)
+        datapack['larm1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #right leg 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 56, 'f', pix)
-    get_pixels(28, 56, 'ba', pix)
-    get_pixels(16, 56, 'l', pix)
-    get_pixels(24, 56, 'r', pix)
-    im.save(f'{save}rleg2.png')
-    im.close()
-    upload_skin(f'{save}rleg2.png')
-    time.sleep(time1)
-    datapack['rleg2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left arm 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 24, 'f', pix)
+        get_pixels(52, 24, 'ba', pix)
+        get_pixels(40, 24, 'l', pix)
+        get_pixels(48, 24, 'r', pix)
+        im.save(f'{save}larm2.png')
+        im.close()
+        upload_skin(f'{save}larm2.png')
+        time.sleep(time1)
+        datapack['larm2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #right leg 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(20, 60, 'f', pix)
-    get_pixels(28, 60, 'ba', pix)
-    get_pixels(24, 48, 'bo', pix)
-    get_pixels(16, 60, 'l', pix)
-    get_pixels(24, 60, 'r', pix)
-    im.save(f'{save}rleg3.png')
-    im.close()
-    upload_skin(f'{save}rleg3.png')
-    time.sleep(time1)
-    datapack['rleg3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #left arm 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 28, 'f', pix)
+        get_pixels(52, 28, 'ba', pix)
+        get_pixels(48, 16, 'bo', pix)
+        get_pixels(40, 28, 'l', pix)
+        get_pixels(48, 28, 'r', pix)
+        im.save(f'{save}larm3.png')
+        im.close()
+        upload_skin(f'{save}larm3.png')
+        time.sleep(time1)
+        datapack['larm3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
 
-    #left leg
-    #left leg 1
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(36, 52, 'f', pix)
-    get_pixels(44, 52, 'ba', pix)
-    get_pixels(36, 48, 't', pix)
-    get_pixels(32, 52, 'l', pix)
-    get_pixels(40, 52, 'r', pix)
-    im.save(f'{save}lleg1.png')
-    im.close()
-    upload_skin(f'{save}lleg1.png')
-    time.sleep(time1)
-    datapack['lleg1'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #body
+        #body 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 20, 'f', pix)
+        get_pixels(16, 20, 'l', pix)
+        get_pixels(20, 16, 't', pix)
+        get_pixels(36, 20, 'ba', pix)
+        im.save(f'{save}body1.png')
+        im.close()
+        upload_skin(f'{save}body1.png')
+        time.sleep(time1)
+        datapack['body1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #left leg 2
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(36, 56, 'f', pix)
-    get_pixels(44, 56, 'ba', pix)
-    get_pixels(32, 56, 'l', pix)
-    get_pixels(40, 56, 'r', pix)
-    im.save(f'{save}lleg2.png')
-    im.close()
-    upload_skin(f'{save}lleg2.png')
-    time.sleep(time1)
-    datapack['lleg2'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #body 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 20, 'f', pix)
+        get_pixels(28, 20, 'r', pix)
+        get_pixels(24, 16, 't', pix)
+        get_pixels(32, 20, 'ba', pix)
+        im.save(f'{save}body2.png')
+        im.close()
+        upload_skin(f'{save}body2.png')
+        time.sleep(time1)
+        datapack['body2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
-    #left leg 3
-    im = Image.open(skin)
-    pix = im.load()
-    clean(pix)
-    get_pixels(36, 60, 'f', pix)
-    get_pixels(44, 60, 'ba', pix)
-    get_pixels(40, 48, 'bo', pix)
-    get_pixels(32, 60, 'l', pix)
-    get_pixels(40, 60, 'r', pix)
-    im.save(f'{save}lleg3.png')
-    im.close()
-    upload_skin(f'{save}lleg3.png')
-    time.sleep(time1)
-    datapack['lleg3'] = generate_armorstand(Username, name)
-    time.sleep(time2)
+        #body 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 24, 'f', pix)
+        get_pixels(16, 24, 'l', pix)
+        get_pixels(36, 24, 'ba', pix)
+        im.save(f'{save}body3.png')
+        im.close()
+        upload_skin(f'{save}body3.png')
+        time.sleep(time1)
+        datapack['body3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 24, 'f', pix)
+        get_pixels(28, 24, 'r', pix)
+        get_pixels(32, 24, 'ba', pix)
+        im.save(f'{save}body4.png')
+        im.close()
+        upload_skin(f'{save}body4.png')
+        time.sleep(time1)
+        datapack['body4'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 5
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 28, 'f', pix)
+        get_pixels(16, 28, 'l', pix)
+        get_pixels(28, 16, 'bo', pix)
+        get_pixels(36, 28, 'ba', pix)
+        im.save(f'{save}body5.png')
+        im.close()
+        upload_skin(f'{save}body5.png')
+        time.sleep(time1)
+        datapack['body5'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 6
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 28, 'f', pix)
+        get_pixels(28, 28, 'r', pix)
+        get_pixels(32, 16, 'bo', pix)
+        get_pixels(32, 28, 'ba', pix)
+        im.save(f'{save}body6.png')
+        im.close()
+        upload_skin(f'{save}body6.png')
+        time.sleep(time1)
+        datapack['body6'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+
+        #right leg
+        #right leg 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 52, 'f', pix)
+        get_pixels(28, 52, 'ba', pix)
+        get_pixels(20, 48, 't', pix)
+        get_pixels(16, 52, 'l', pix)
+        get_pixels(24, 52, 'r', pix)
+        im.save(f'{save}rleg1.png')
+        im.close()
+        upload_skin(f'{save}rleg1.png')
+        time.sleep(time1)
+        datapack['rleg1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right leg 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 56, 'f', pix)
+        get_pixels(28, 56, 'ba', pix)
+        get_pixels(16, 56, 'l', pix)
+        get_pixels(24, 56, 'r', pix)
+        im.save(f'{save}rleg2.png')
+        im.close()
+        upload_skin(f'{save}rleg2.png')
+        time.sleep(time1)
+        datapack['rleg2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right leg 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 60, 'f', pix)
+        get_pixels(28, 60, 'ba', pix)
+        get_pixels(24, 48, 'bo', pix)
+        get_pixels(16, 60, 'l', pix)
+        get_pixels(24, 60, 'r', pix)
+        im.save(f'{save}rleg3.png')
+        im.close()
+        upload_skin(f'{save}rleg3.png')
+        time.sleep(time1)
+        datapack['rleg3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+
+        #right arm
+        #right arm 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(36, 52, 'f', pix)
+        get_pixels(44, 52, 'ba', pix)
+        get_pixels(36, 48, 't', pix)
+        get_pixels(32, 52, 'l', pix)
+        get_pixels(40, 52, 'r', pix)
+        im.save(f'{save}rarm1.png')
+        im.close()
+        upload_skin(f'{save}rarm1.png')
+        time.sleep(time1)
+        datapack['rarm1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right arm 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(36, 56, 'f', pix)
+        get_pixels(44, 56, 'ba', pix)
+        get_pixels(32, 56, 'l', pix)
+        get_pixels(40, 56, 'r', pix)
+        im.save(f'{save}rarm2.png')
+        im.close()
+        upload_skin(f'{save}rarm2.png')
+        time.sleep(time1)
+        datapack['rarm2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right arm 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(36, 60, 'f', pix)
+        get_pixels(44, 60, 'ba', pix)
+        get_pixels(40, 48, 'bo', pix)
+        get_pixels(32, 60, 'l', pix)
+        get_pixels(40, 60, 'r', pix)
+        im.save(f'{save}rarm3.png')
+        im.close()
+        upload_skin(f'{save}rarm3.png')
+        time.sleep(time1)
+        datapack['rarm3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+    else:
+                #head
+        #front 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(8, 8, 'f', pix)
+        get_pixels(8, 4, 't', pix)
+        get_pixels(4, 8, 'l', pix)
+        im.save(f'{save}head1.png')
+        im.close()
+        upload_skin(f'{save}head1.png')
+        time.sleep(time1)
+        datapack['head1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #front 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(12, 8, 'f', pix)
+        get_pixels(12, 4, 't', pix)
+        get_pixels(16, 8, 'r', pix)
+        im.save(f'{save}head2.png')
+        im.close()
+        upload_skin(f'{save}head2.png')
+        time.sleep(time1)
+        datapack['head2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #front 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(12, 12, 'f', pix)
+        get_pixels(20, 4, 'bo', pix)
+        get_pixels(16, 12, 'r', pix)
+        im.save(f'{save}head3.png')
+        im.close()
+        upload_skin(f'{save}head3.png')
+        time.sleep(time1)
+        datapack['head3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #front 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(8, 12, 'f', pix)
+        get_pixels(16, 4, 'bo', pix)
+        get_pixels(4, 12, 'l', pix)
+        im.save(f'{save}head4.png')
+        im.close()
+        upload_skin(f'{save}head4.png')
+        time.sleep(time1)
+        datapack['head4'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #back 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 8, 'ba', pix)
+        get_pixels(12, 0, 't', pix)
+        get_pixels(20, 8, 'r', pix)
+        im.save(f'{save}head5.png')
+        im.close()
+        upload_skin(f'{save}head5.png')
+        time.sleep(time1)
+        datapack['head5'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #back 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(28, 8, 'ba', pix)
+        get_pixels(8, 0, 't', pix)
+        get_pixels(0, 8, 'l', pix)
+        im.save(f'{save}head6.png')
+        im.close()
+        upload_skin(f'{save}head6.png')
+        time.sleep(time1)
+        datapack['head6'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #back 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(28, 12, 'ba', pix)
+        get_pixels(16, 0, 'bo', pix)
+        get_pixels(0, 12, 'l', pix)
+        im.save(f'{save}head7.png')
+        im.close()
+        upload_skin(f'{save}head7.png')
+        time.sleep(time1)
+        datapack['head7'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #back 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 12, 'ba', pix)
+        get_pixels(20, 0, 'bo', pix)
+        get_pixels(20, 12, 'r', pix)
+        im.save(f'{save}head8.png')
+        im.close()
+        upload_skin(f'{save}head8.png')
+        time.sleep(time1)
+        datapack['head8'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+         #body
+        #body 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 20, 'f', pix)
+        get_pixels(16, 20, 'l', pix)
+        get_pixels(20, 16, 't', pix)
+        get_pixels(36, 20, 'ba', pix)
+        im.save(f'{save}body1.png')
+        im.close()
+        upload_skin(f'{save}body1.png')
+        time.sleep(time1)
+        datapack['body1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 20, 'f', pix)
+        get_pixels(28, 20, 'r', pix)
+        get_pixels(24, 16, 't', pix)
+        get_pixels(32, 20, 'ba', pix)
+        im.save(f'{save}body2.png')
+        im.close()
+        upload_skin(f'{save}body2.png')
+        time.sleep(time1)
+        datapack['body2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 24, 'f', pix)
+        get_pixels(16, 24, 'l', pix)
+        get_pixels(36, 24, 'ba', pix)
+        im.save(f'{save}body3.png')
+        im.close()
+        upload_skin(f'{save}body3.png')
+        time.sleep(time1)
+        datapack['body3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 4
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 24, 'f', pix)
+        get_pixels(28, 24, 'r', pix)
+        get_pixels(32, 24, 'ba', pix)
+        im.save(f'{save}body4.png')
+        im.close()
+        upload_skin(f'{save}body4.png')
+        time.sleep(time1)
+        datapack['body4'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 5
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(20, 28, 'f', pix)
+        get_pixels(16, 28, 'l', pix)
+        get_pixels(28, 16, 'bo', pix)
+        get_pixels(36, 28, 'ba', pix)
+        im.save(f'{save}body5.png')
+        im.close()
+        upload_skin(f'{save}body5.png')
+        time.sleep(time1)
+        datapack['body5'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #body 6
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(24, 28, 'f', pix)
+        get_pixels(28, 28, 'r', pix)
+        get_pixels(32, 16, 'bo', pix)
+        get_pixels(32, 28, 'ba', pix)
+        im.save(f'{save}body6.png')
+        im.close()
+        upload_skin(f'{save}body6.png')
+        time.sleep(time1)
+        datapack['body6'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+
+        #left leg
+        #left leg 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 20, 'f', pix)
+        get_pixels(12, 20, 'ba', pix)
+        get_pixels(4, 16, 't', pix)
+        get_pixels(0, 20, 'l', pix)
+        get_pixels(8, 20, 'r', pix)
+        im.save(f'{save}lleg1.png')
+        im.close()
+        upload_skin(f'{save}lleg1.png')
+        time.sleep(time1)
+        datapack['lleg1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #left leg 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 24, 'f', pix)
+        get_pixels(12, 24, 'ba', pix)
+        get_pixels(0, 24, 'l', pix)
+        get_pixels(8, 24, 'r', pix)
+        im.save(f'{save}lleg2.png')
+        im.close()
+        upload_skin(f'{save}lleg2.png')
+        time.sleep(time1)
+        datapack['lleg2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #left leg 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(4, 28, 'f', pix)
+        get_pixels(12, 28, 'ba', pix)
+        get_pixels(8, 16, 'bo', pix)
+        get_pixels(0, 28, 'l', pix)
+        get_pixels(8, 28, 'r', pix)
+        im.save(f'{save}lleg3.png')
+        im.close()
+        upload_skin(f'{save}lleg3.png')
+        time.sleep(time1)
+        datapack['lleg3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #left arm
+        #left arm 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 20, 'f', pix)
+        get_pixels(52, 20, 'ba', pix)
+        get_pixels(44, 16, 't', pix)
+        get_pixels(40, 20, 'l', pix)
+        get_pixels(48, 20, 'r', pix)
+        im.save(f'{save}larm1.png')
+        im.close()
+        upload_skin(f'{save}larm1.png')
+        time.sleep(time1)
+        datapack['larm1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #left arm 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 24, 'f', pix)
+        get_pixels(52, 24, 'ba', pix)
+        get_pixels(40, 24, 'l', pix)
+        get_pixels(48, 24, 'r', pix)
+        im.save(f'{save}larm2.png')
+        im.close()
+        upload_skin(f'{save}larm2.png')
+        time.sleep(time1)
+        datapack['larm2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #left arm 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_pixels(44, 28, 'f', pix)
+        get_pixels(52, 28, 'ba', pix)
+        get_pixels(48, 16, 'bo', pix)
+        get_pixels(40, 28, 'l', pix)
+        get_pixels(48, 28, 'r', pix)
+        im.save(f'{save}larm3.png')
+        im.close()
+        upload_skin(f'{save}larm3.png')
+        time.sleep(time1)
+        datapack['larm3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right leg
+        #right leg 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(4, 20, 'f', pix)
+        get_reversed_pixels(12, 20, 'ba', pix)
+        get_reversed_pixels(4, 16, 't', pix)
+        get_reversed_pixels(0, 20, 'r', pix)
+        get_reversed_pixels(8, 20, 'l', pix)
+        im.save(f'{save}rleg1.png')
+        im.close()
+        upload_skin(f'{save}rleg1.png')
+        time.sleep(time1)
+        datapack['rleg1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right leg 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(4, 24, 'f', pix)
+        get_reversed_pixels(12, 24, 'ba', pix)
+        get_reversed_pixels(0, 24, 'r', pix)
+        get_reversed_pixels(8, 24, 'l', pix)
+        im.save(f'{save}rleg2.png')
+        im.close()
+        upload_skin(f'{save}rleg2.png')
+        time.sleep(time1)
+        datapack['rleg2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right leg 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(4, 28, 'f', pix)
+        get_reversed_pixels(12, 28, 'ba', pix)
+        get_reversed_pixels(8, 16, 'bo', pix)
+        get_reversed_pixels(0, 28, 'r', pix)
+        get_reversed_pixels(8, 28, 'l', pix)
+        im.save(f'{save}rleg3.png')
+        im.close()
+        upload_skin(f'{save}rleg3.png')
+        time.sleep(time1)
+        datapack['rleg3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right arm
+        #right arm 1
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(44, 20, 'f', pix)
+        get_reversed_pixels(52, 20, 'ba', pix)
+        get_reversed_pixels(44, 16, 't', pix)
+        get_reversed_pixels(40, 20, 'r', pix)
+        get_reversed_pixels(48, 20, 'l', pix)
+        im.save(f'{save}rarm1.png')
+        im.close()
+        upload_skin(f'{save}rarm1.png')
+        time.sleep(time1)
+        datapack['rarm1'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right arm 2
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(44, 24, 'f', pix)
+        get_reversed_pixels(52, 24, 'ba', pix)
+        get_reversed_pixels(40, 24, 'r', pix)
+        get_reversed_pixels(48, 24, 'l', pix)
+        im.save(f'{save}rarm2.png')
+        im.close()
+        upload_skin(f'{save}rarm2.png')
+        time.sleep(time1)
+        datapack['rarm2'] = generate_armorstand(Username, name)
+        time.sleep(time2)
+
+        #right arm 3
+        im = Image.open(skin)
+        pix = im.load()
+        clean(pix)
+        get_reversed_pixels(44, 28, 'f', pix)
+        get_reversed_pixels(52, 28, 'ba', pix)
+        get_reversed_pixels(48, 16, 'bo', pix)
+        get_reversed_pixels(40, 28, 'r', pix)
+        get_reversed_pixels(48, 28, 'l', pix)
+        im.save(f'{save}rarm3.png')
+        im.close()
+        upload_skin(f'{save}rarm3.png')
+        time.sleep(time1)
+        datapack['rarm3'] = generate_armorstand(Username, name)
+        time.sleep(time2)
 
     #make the datapack
     print('[*]making the datapack...')
@@ -601,31 +1056,31 @@ def main(Username, name , skin, overlay=True):
     GenerateMcfunction.close()
     
     GeneratenxMcfunction = open(f'{functions_folder}/generatenx.mcfunction','w')
-    GeneratenxMcfunction.write(f'summon armor_stand ~-0.1 ~-0.9 ~-0.65  {datapack["rarm3"][0]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnx')
+    GeneratenxMcfunction.write(f'summon armor_stand ~-0.1 ~-0.9 ~-0.65  {datapack["lleg3"][0]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnx')
     GeneratenxMcfunction.close()
     BuildnxMcfuntion = open(f'{functions_folder}/buildnx.mcfunction', 'w')
-    BuildnxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][0]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][0]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~0.25 {datapack["rleg3"][0]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~0.25 {datapack["rleg2"][0]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~0.25 {datapack["rleg1"][0]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["body6"][0]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][0]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][0]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["body4"][0]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][0]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["body2"][0]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["larm3"][0]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["larm2"][0]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["larm1"][0]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.5 {datapack["lleg3"][0]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.5 {datapack["lleg2"][0]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.5 {datapack["lleg1"][0]}\n#head4:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head7"][0]}\n#head3:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~0.25 {datapack["head3"][0]}\n#head7:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head4"][0]}\n#head8:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~0.25 {datapack["head8"][0]}\n#head1:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head6"][0]}\n#head2:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~0.25 {datapack["head2"][0]}\n#head6:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head1"][0]}\n#head5:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~0.25 {datapack["head5"][0]}\ntag @e remove base_building')
+    BuildnxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["lleg2"][0]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["lleg1"][0]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~0.25 {datapack["rleg3"][0]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~0.25 {datapack["rleg2"][0]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~0.25 {datapack["rleg1"][0]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["body6"][0]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][0]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][0]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["body4"][0]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][0]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["body2"][0]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["larm3"][0]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["larm2"][0]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["larm1"][0]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.5 {datapack["rarm3"][0]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.5 {datapack["rarm2"][0]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.5 {datapack["rarm1"][0]}\n#head4:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head7"][0]}\n#head3:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~0.25 {datapack["head3"][0]}\n#head7:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head4"][0]}\n#head8:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~0.25 {datapack["head8"][0]}\n#head1:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head6"][0]}\n#head2:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~0.25 {datapack["head2"][0]}\n#head6:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head1"][0]}\n#head5:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~0.25 {datapack["head5"][0]}\ntag @e remove base_building')
     BuildnxMcfuntion.close()
     
     GeneratepxMcfunction = open(f'{functions_folder}/generatepx.mcfunction','w')
-    GeneratepxMcfunction.write(f'summon armor_stand ~0.1 ~-0.9 ~0.65  {datapack["rarm3"][1]}\nexecute as @e[tag=base_building] at @s run function {name}:buildpx')
+    GeneratepxMcfunction.write(f'summon armor_stand ~0.1 ~-0.9 ~0.65  {datapack["lleg3"][1]}\nexecute as @e[tag=base_building] at @s run function {name}:buildpx')
     GeneratepxMcfunction.close()
     BuildpxMcfuntion = open(f'{functions_folder}/buildpx.mcfunction', 'w')
-    BuildpxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][1]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][1]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~-0.25 {datapack["rleg3"][1]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~-0.25 {datapack["rleg2"][1]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~-0.25 {datapack["rleg1"][1]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["body6"][1]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][1]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][1]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["body4"][1]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][1]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["body2"][1]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["larm3"][1]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["larm2"][1]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["larm1"][1]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.5 {datapack["lleg3"][1]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.5 {datapack["lleg2"][1]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.5 {datapack["lleg1"][1]}\n#head4:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head7"][1]}\n#head3:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~-0.25 {datapack["head3"][1]}\n#head7:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head4"][1]}\n#head8:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~-0.25 {datapack["head8"][1]}\n#head1:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head6"][1]}\n#head2:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~-0.25 {datapack["head2"][1]}\n#head6:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head1"][1]}\n#head5:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~-0.25 {datapack["head5"][1]}\ntag @e remove base_building')
+    BuildpxMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["lleg2"][1]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["lleg1"][1]}\n#rleg3:\nexecute at @s run summon armor_stand ~ ~ ~-0.25 {datapack["rleg3"][1]}\n#rleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~-0.25 {datapack["rleg2"][1]}\n#rleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~-0.25 {datapack["rleg1"][1]}\n#body6:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.25 {datapack["body6"][1]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][1]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][1]}\n#body4:\nexecute at @s run summon armor_stand ~ ~1 ~-0.25 {datapack["body4"][1]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][1]}\n#body2:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.25 {datapack["body2"][1]}\n#larm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~0.25 {datapack["larm3"][1]}\n#larm2:\nexecute at @s run summon armor_stand ~ ~1 ~0.25 {datapack["larm2"][1]}\n#larm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~0.25 {datapack["larm1"][1]}\n#rarm3:\nexecute at @s run summon armor_stand ~ ~0.75 ~-0.5 {datapack["rarm3"][1]}\n#rarm2:\nexecute at @s run summon armor_stand ~ ~1 ~-0.5 {datapack["rarm2"][1]}\n#rarm1:\nexecute at @s run summon armor_stand ~ ~1.25 ~-0.5 {datapack["rarm1"][1]}\n#head4:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~ {datapack["head7"][1]}\n#head3:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~-0.25 {datapack["head3"][1]}\n#head7:\nexecute at @s run summon armor_stand ~0.12 ~1.5 ~ {datapack["head4"][1]}\n#head8:\nexecute at @s run summon armor_stand ~-0.12 ~1.5 ~-0.25 {datapack["head8"][1]}\n#head1:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~ {datapack["head6"][1]}\n#head2:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~-0.25 {datapack["head2"][1]}\n#head6:\nexecute at @s run summon armor_stand ~0.12 ~1.75 ~ {datapack["head1"][1]}\n#head5:\nexecute at @s run summon armor_stand ~-0.12 ~1.75 ~-0.25 {datapack["head5"][1]}\ntag @e remove base_building')
     BuildpxMcfuntion.close()
     
     GeneratepzMcfunction = open(f'{functions_folder}/generatepz.mcfunction','w')
-    GeneratepzMcfunction.write(f'summon armor_stand ~-0.65 ~-0.9 ~0.1  {datapack["rarm3"][2]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnz')
+    GeneratepzMcfunction.write(f'summon armor_stand ~-0.65 ~-0.9 ~0.1  {datapack["lleg3"][2]}\nexecute as @e[tag=base_building] at @s run function {name}:buildnz')
     GeneratepzMcfunction.close()
     BuildpzMcfuntion = open(f'{functions_folder}/buildnz.mcfunction', 'w')
-    BuildpzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][2]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][2]}\n#rleg3:\nexecute at @s run summon armor_stand ~0.25 ~ ~ {datapack["rleg3"][2]}\n#rleg2:\nexecute at @s run summon armor_stand ~0.25 ~0.25 ~ {datapack["rleg2"][2]}\n#rleg1:\nexecute at @s run summon armor_stand ~0.25 ~0.50 ~ {datapack["rleg1"][2]}\n#body6:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["body6"][2]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][2]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][2]}\n#body4:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["body4"][2]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][2]}\n#body2:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["body2"][2]}\n#larm3:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["larm3"][2]}\n#larm2:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["larm2"][2]}\n#larm1:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["larm1"][2]}\n#rarm3:\nexecute at @s run summon armor_stand ~0.5 ~0.75 ~ {datapack["lleg3"][2]}\n#rarm2:\nexecute at @s run summon armor_stand ~0.5 ~1 ~ {datapack["lleg2"][2]}\n#rarm1:\nexecute at @s run summon armor_stand ~0.5 ~1.25 ~ {datapack["lleg1"][2]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head7"][2]}\n#head3:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~0.12 {datapack["head3"][2]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head4"][2]}\n#head8:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~-0.12 {datapack["head8"][2]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head6"][2]}\n#head2:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~0.12 {datapack["head2"][2]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head1"][2]}\n#head5:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~-0.12 {datapack["head5"][2]}\ntag @e remove base_building')
+    BuildpzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["lleg2"][2]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["lleg1"][2]}\n#rleg3:\nexecute at @s run summon armor_stand ~0.25 ~ ~ {datapack["rleg3"][2]}\n#rleg2:\nexecute at @s run summon armor_stand ~0.25 ~0.25 ~ {datapack["rleg2"][2]}\n#rleg1:\nexecute at @s run summon armor_stand ~0.25 ~0.50 ~ {datapack["rleg1"][2]}\n#body6:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["body6"][2]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][2]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][2]}\n#body4:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["body4"][2]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][2]}\n#body2:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["body2"][2]}\n#larm3:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["larm3"][2]}\n#larm2:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["larm2"][2]}\n#larm1:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["larm1"][2]}\n#rarm3:\nexecute at @s run summon armor_stand ~0.5 ~0.75 ~ {datapack["rarm3"][2]}\n#rarm2:\nexecute at @s run summon armor_stand ~0.5 ~1 ~ {datapack["rarm2"][2]}\n#rarm1:\nexecute at @s run summon armor_stand ~0.5 ~1.25 ~ {datapack["rarm1"][2]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head7"][2]}\n#head3:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~0.12 {datapack["head3"][2]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head4"][2]}\n#head8:\nexecute at @s run summon armor_stand ~0.25 ~1.5 ~-0.12 {datapack["head8"][2]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head6"][2]}\n#head2:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~0.12 {datapack["head2"][2]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head1"][2]}\n#head5:\nexecute at @s run summon armor_stand ~0.25 ~1.75 ~-0.12 {datapack["head5"][2]}\ntag @e remove base_building')
     BuildpzMcfuntion.close()
     
     GeneratenzMcfunction = open(f'{functions_folder}/generatenz.mcfunction','w')
-    GeneratenzMcfunction.write(f'summon armor_stand ~0.65 ~-0.9 ~0.1  {datapack["rarm3"][3]}\n execute as @e[tag=base_building] at @s run function {name}:buildpz')
+    GeneratenzMcfunction.write(f'summon armor_stand ~0.65 ~-0.9 ~0.1  {datapack["lleg3"][3]}\n execute as @e[tag=base_building] at @s run function {name}:buildpz')
     GeneratenzMcfunction.close()
     BuildnzMcfuntion = open(f'{functions_folder}/buildpz.mcfunction', 'w')
-    BuildnzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["rarm2"][3]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["rarm1"][3]}\n#rleg3:\nexecute at @s run summon armor_stand ~-0.25 ~ ~ {datapack["rleg3"][3]}\n#rleg2:\nexecute at @s run summon armor_stand ~-0.25 ~0.25 ~ {datapack["rleg2"][3]}\n#rleg1:\nexecute at @s run summon armor_stand ~-0.25 ~0.50 ~ {datapack["rleg1"][3]}\n#body6:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["body6"][3]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][3]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][3]}\n#body4:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["body4"][3]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][3]}\n#body2:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["body2"][3]}\n#larm3:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["larm3"][3]}\n#larm2:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["larm2"][3]}\n#larm1:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["larm1"][3]}\n#rarm3:\nexecute at @s run summon armor_stand ~-0.5 ~0.75 ~ {datapack["lleg3"][3]}\n#rarm2:\nexecute at @s run summon armor_stand ~-0.5 ~1 ~ {datapack["lleg2"][3]}\n#rarm1:\nexecute at @s run summon armor_stand ~-0.5 ~1.25 ~ {datapack["lleg1"][3]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head7"][3]}\n#head3:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~-0.12 {datapack["head3"][3]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head4"][3]}\n#head8:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~0.12 {datapack["head8"][3]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head6"][3]}\n#head2:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~-0.12 {datapack["head2"][3]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head1"][3]}\n#head5:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~0.12 {datapack["head5"][3]}\ntag @e remove base_building')
+    BuildnzMcfuntion.write(f'#lleg2:\nexecute at @s run summon armor_stand ~ ~0.25 ~ {datapack["lleg2"][3]}\n#lleg1:\nexecute at @s run summon armor_stand ~ ~0.50 ~ {datapack["lleg1"][3]}\n#rleg3:\nexecute at @s run summon armor_stand ~-0.25 ~ ~ {datapack["rleg3"][3]}\n#rleg2:\nexecute at @s run summon armor_stand ~-0.25 ~0.25 ~ {datapack["rleg2"][3]}\n#rleg1:\nexecute at @s run summon armor_stand ~-0.25 ~0.50 ~ {datapack["rleg1"][3]}\n#body6:\nexecute at @s run summon armor_stand ~-0.25 ~0.75 ~ {datapack["body6"][3]}\n#body5:\nexecute at @s run summon armor_stand ~ ~0.75 ~ {datapack["body5"][3]}\n#body3:\nexecute at @s run summon armor_stand ~ ~1 ~ {datapack["body3"][3]}\n#body4:\nexecute at @s run summon armor_stand ~-0.25 ~1 ~ {datapack["body4"][3]}\n#body1:\nexecute at @s run summon armor_stand ~ ~1.25 ~ {datapack["body1"][3]}\n#body2:\nexecute at @s run summon armor_stand ~-0.25 ~1.25 ~ {datapack["body2"][3]}\n#larm3:\nexecute at @s run summon armor_stand ~0.25 ~0.75 ~ {datapack["larm3"][3]}\n#larm2:\nexecute at @s run summon armor_stand ~0.25 ~1 ~ {datapack["larm2"][3]}\n#larm1:\nexecute at @s run summon armor_stand ~0.25 ~1.25 ~ {datapack["larm1"][3]}\n#rarm3:\nexecute at @s run summon armor_stand ~-0.5 ~0.75 ~ {datapack["rarm3"][3]}\n#rarm2:\nexecute at @s run summon armor_stand ~-0.5 ~1 ~ {datapack["rarm2"][3]}\n#rarm1:\nexecute at @s run summon armor_stand ~-0.5 ~1.25 ~ {datapack["rarm1"][3]}\n#head4:\nexecute at @s run summon armor_stand ~ ~1.5 ~0.12 {datapack["head7"][3]}\n#head3:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~-0.12 {datapack["head3"][3]}\n#head7:\nexecute at @s run summon armor_stand ~ ~1.5 ~-0.12 {datapack["head4"][3]}\n#head8:\nexecute at @s run summon armor_stand ~-0.25 ~1.5 ~0.12 {datapack["head8"][3]}\n#head1:\nexecute at @s run summon armor_stand ~ ~1.75 ~0.12 {datapack["head6"][3]}\n#head2:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~-0.12 {datapack["head2"][3]}\n#head6:\nexecute at @s run summon armor_stand ~ ~1.75 ~-0.12 {datapack["head1"][3]}\n#head5:\nexecute at @s run summon armor_stand ~-0.25 ~1.75 ~0.12 {datapack["head5"][3]}\ntag @e remove base_building')
     BuildnzMcfuntion.close()
 
     RemoveMcfunction = open(f'{functions_folder}/remove.mcfunction','w')

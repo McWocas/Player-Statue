@@ -13,7 +13,7 @@ Here is how it works:
 4) To generate a skin, type the following '`main('Username', 'Name', 'Skin', Extra Settings)`' where:
 	- Username = The name of your Minecraft account that you used to login.
 	- Name = The name that you want to give your statue (!important to take a different name each time!). It needs to be lowercase.
-	- Skin = The path address (file location) of the skin. If you are on Windows, it will probably look like `C:/Users/username/path/to/file.png`
+	- Skin = The path address (file location) of the skin. If you are on Windows, it will probably look like `C:/Users/username/path/to/file.png` or the username of the player that you want.
 
 	Extra Settings:
    	- Type `Overlay=False` if you don't want to use the overlay (defaulted to True).
